@@ -137,10 +137,10 @@ with st.sidebar:
             position: fixed;
             top: 8px;
             left: 8px;
-            background: rgba(255,255,255,0.90);
+            background: rgba(255,220,216,0.90);
             padding: 8px 12px;
             border-radius: 6px;
-            font-size: 20pt;
+            font-size: 18pt;
             font-weight: 700;
             color: #222;
             z-index: 9999;
@@ -448,6 +448,7 @@ if not st.session_state.data_df.empty:
 
 else:
     st.info("용역명과 조회 기간을 설정한 뒤 '검색 시작'을 눌러주세요.")
+
 
 
 
