@@ -15,6 +15,7 @@ load_dotenv()  # 로컬에서 .env 파일을 사용하는 경우에 유용
 # --- 서비스 키 (환경변수에서 읽기) ---
 SERVICE_KEY = os.getenv("NARA_SERVICE_KEY")
 if not SERVICE_KEY:
+    import streamlit as st
     st.warning("환경변수 NARA_SERVICE_KEY가 설정되어 있지 않습니다. GitHub Secrets에 추가하세요.")
 API_URL = 'http://apis.data.go.kr/1230000/ao/CntrctInfoService/getCntrctInfoListServcPPSSrch'
 MAX_API_ROWS = 999  # API가 한 번에 반환하는 최대 개수
@@ -409,3 +410,4 @@ if not st.session_state.data_df.empty:
 
 else:
     st.info("용역명과 조회 기간을 설정한 뒤 '검색 시작'을 눌러주세요.")
+
