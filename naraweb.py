@@ -12,6 +12,9 @@ from dotenv import load_dotenv
 # --- 환경 로드 (.env 사용 시) ---
 load_dotenv()  # 로컬에서 .env 파일을 사용하는 경우에 유용
 
+# 디버그 모드 설정: Streamlit Cloud/Actions에 NARA_DEBUG=true/false로 설정 가능
+DEBUG = os.getenv("NARA_DEBUG", "false").lower() in ("1", "true", "yes")
+
 # --- 서비스 키 (환경변수에서 읽기) ---
 SERVICE_KEY = os.getenv("NARA_SERVICE_KEY")
 if not SERVICE_KEY:
@@ -128,6 +131,7 @@ if 'selected_institution' not in st.session_state:
 # --- 사이드바: 검색 조건 ---
 with st.sidebar:
     st.header("🔍 조회 조건 설정")
+    st.write("by.사업개발팀")
 
     today = datetime.today()
     default_start_date = today - timedelta(days=365)
@@ -197,15 +201,17 @@ def get_contract_data(start_dt, end_dt, contract_nm, instt_type_value):
             'cntrctNm': contract_nm
         }
         # 디버그: params 확인 (주의: serviceKey 값 자체는 출력하지 않음)
-        st.sidebar.write("DEBUG params keys:", list(params.keys()))
-        st.sidebar.write("DEBUG insttClsfcCd:", params.get('insttClsfcCd'))
-        st.sidebar.write("DEBUG serviceKey_present:", bool(params.get('serviceKey')))
+       
+        if DEBUG:
+            st.sidebar.write("DEBUG params keys:", list(params.keys()))
+            st.sidebar.write("DEBUG insttClsfcCd:", params.get('insttClsfcCd'))
+            st.sidebar.write("DEBUG serviceKey_present:", bool(params.get('serviceKey')))
         
         response = requests.get(API_URL, params=params, timeout=30)
         
-        # 디버그: 응답 상태와 앞부분(최대 1500자) 출력
-        st.sidebar.write("DEBUG status_code:", response.status_code)
-        st.sidebar.text(response.text[:1500])
+        if DEBUG:
+            st.sidebar.write("DEBUG status_code:", response.status_code)
+            st.sidebar.text(response.text[:1500])
 
         # API가 요구하는 소관기관 파라미터명으로 전송
         if instt_type_value:
@@ -420,5 +426,6 @@ if not st.session_state.data_df.empty:
 
 else:
     st.info("용역명과 조회 기간을 설정한 뒤 '검색 시작'을 눌러주세요.")
+
 
 
