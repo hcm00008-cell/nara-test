@@ -127,12 +127,24 @@ with st.sidebar: # 사이드바에 필터 넣어서 깔끔하게!
     # 용역명 입력 위젯
     contract_name = st.text_input("📝 용역명 (ex: 통합관제센터)", placeholder="검색할 용역명을 입력하세요.")
 
-    # 🔥 소관기관구분 단일 선택으로 변경 🔥
-    selected_institution = st.selectbox(
-        "🏛️ 소관기관구분 (1개 선택)", # 레이블 변경
-        options=list(INSTITUTION_TYPES.keys()), # 텍스트만 보이도록 keys() 사용
-        index=0 # 기본값 첫 번째 항목으로 설정
-    )
+    # 사이드바: 소관기관 (빈칸 = 전체조회, 선택 후 ❌로 초기화 가능)
+    inst_options = list(INSTITUTION_TYPES.keys())
+    select_options = [""] + inst_options  # 첫 항목 빈 문자열 = 전체조회
+
+    col_a, col_b = st.columns([4, 1], gap="small")
+    with col_a:
+        st.session_state.selected_institution = st.selectbox(
+            "소관기관 (빈칸 = 전체조회)",
+            options=select_options,
+            index=0 if st.session_state.get('selected_institution', "") == "" else select_options.index(st.session_state.get('selected_institution')),
+            key="selected_institution",
+            format_func=lambda x: "선택안함" if x == "" else x,
+            help="기관을 골라서 필터링하거나 빈칸으로 두면 전체를 조회합니다."
+        )
+    with col_b:
+        if st.button("❌", key="clear_inst"):
+            st.session_state.selected_institution = ""
+        )
     
     # 소관기관구분 직접 입력 (선택지에 없는 경우)
     custom_institution_type = st.text_input(
@@ -261,17 +273,15 @@ reverse_display_columns_map = {v: k for k, v in display_columns_map.items()}
 if st.session_state.search_button_clicked:
     instt_type_to_api = None # API로 전달할 최종 소관기관 값
 
-    # 🔥 단일 선택이므로 selected_institutions -> selected_institution 으로 변경 🔥
-    if selected_institution: # 사용자가 선택한 기관이 있다면
-        # 사용자가 선택한 기관의 '이름'으로 '코드'를 찾음
-        instt_type_to_api = INSTITUTION_TYPES.get(selected_institution)
-        if not instt_type_to_api: # 선택된 기관의 코드를 찾을 수 없다면
-            st.warning(f"선택하신 '{selected_institution}'에 대한 유효한 API 코드를 찾을 수 없습니다. API에 반영되지 않을 수 있습니다.")
-    
-    # 2. 직접 입력값이 있다면 직접 입력값을 사용 (선택 항목보다 우선하지 않음)
-    if custom_institution_type:
-        instt_type_to_api = custom_institution_type
-        st.warning(f"직접 입력하신 '{custom_institution_type}'는 유효한 API 코드가 아닐 수 있습니다. 검색 결과가 예상과 다를 수 있습니다.")
+    inst_to_api = None
+    # custom_institution_type = st.text_input(...) 로 직접입력 값이 있다면 우선
+    if custom_institution_type and custom_institution_type.strip() != "":
+        inst_to_api = custom_institution_type.strip()
+    elif st.session_state.get('selected_institution', "") != "":
+        inst_name = st.session_state['selected_institution']
+        inst_to_api = INSTITUTION_TYPES.get(inst_name)  # '01' 같은 코드
+    # inst_to_api가 None이면 get_contract_data에서 소관기관 파라미터를 생략하면 전체조회 됨
+    df = get_contract_data(start_date, end_date, contract_name, inst_to_api)
     
     # 검색 조건 유효성 검사
     if not contract_name:
@@ -510,4 +520,5 @@ else:
 
 st.markdown("---")
 st.write("by.사업개발팀 😊")
+
 
