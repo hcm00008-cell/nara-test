@@ -130,8 +130,30 @@ if 'selected_institution' not in st.session_state:
 
 # --- 사이드바: 검색 조건 ---
 with st.sidebar:
+    # 좌측 상단 고정 배지: 글자 굵게, 20pt
+    st.markdown(
+        """
+        <div style="
+            position: fixed;
+            top: 8px;
+            left: 8px;
+            background: rgba(255,255,255,0.90);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 20pt;
+            font-weight: 700;
+            color: #222;
+            z-index: 9999;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+        ">
+            "by. 사업개발팀
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+    
     st.header("🔍 조회 조건 설정")
-    st.write("by.사업개발팀")
+    
 
     today = datetime.today()
     default_start_date = today - timedelta(days=365)
@@ -426,6 +448,7 @@ if not st.session_state.data_df.empty:
 
 else:
     st.info("용역명과 조회 기간을 설정한 뒤 '검색 시작'을 눌러주세요.")
+
 
 
 
