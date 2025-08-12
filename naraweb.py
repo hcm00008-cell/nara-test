@@ -196,6 +196,16 @@ def get_contract_data(start_dt, end_dt, contract_nm, instt_type_value):
             'inqryEndDate': end_dt.strftime("%Y%m%d"),
             'cntrctNm': contract_nm
         }
+        # 디버그: params 확인 (주의: serviceKey 값 자체는 출력하지 않음)
+        st.sidebar.write("DEBUG params keys:", list(params.keys()))
+        st.sidebar.write("DEBUG insttClsfcCd:", params.get('insttClsfcCd'))
+        st.sidebar.write("DEBUG serviceKey_present:", bool(params.get('serviceKey')))
+        
+        response = requests.get(API_URL, params=params, timeout=30)
+        
+        # 디버그: 응답 상태와 앞부분(최대 1500자) 출력
+        st.sidebar.write("DEBUG status_code:", response.status_code)
+        st.sidebar.text(response.text[:1500])
 
         # API가 요구하는 소관기관 파라미터명으로 전송
         if instt_type_value:
@@ -410,4 +420,5 @@ if not st.session_state.data_df.empty:
 
 else:
     st.info("용역명과 조회 기간을 설정한 뒤 '검색 시작'을 눌러주세요.")
+
 
