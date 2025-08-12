@@ -4,9 +4,14 @@ import xml.etree.ElementTree as ET
 import pandas as pd
 from datetime import datetime, timedelta
 import io # io 모듈 추가 (바이너리 데이터 처리용)
+import os
+from dotenv import load_dotenv  # 로컬 테스트용(선택)
+load_dotenv()  # .env가 있으면 로드
 
-# 루이튼 : 공공데이터 오픈 API 서비스 키는 숨기거나 안전하게 관리하는 게 좋아.
-SERVICE_KEY = 'H6jv3HXNwN5VgDUKNKb42Ax0WmSudq3La22ACP+tolH4Jh27tS6cWiTgD3eIGv9dxOPT68/UD6mvHJq5iQUQkg=='
+SERVICE_KEY = os.getenv("NARA_SERVICE_KEY")
+if not SERVICE_KEY:
+    # 개발 중엔 경고만 띄우고, 배포 시에는 반드시 세팅해야 함
+    st.warning("환경변수 NARA_SERVICE_KEY가 설정되어 있지 않습니다. GitHub Secrets에 추가하세요.")
 API_URL = 'http://apis.data.go.kr/1230000/ao/CntrctInfoService/getCntrctInfoListServcPPSSrch'
 MAX_API_ROWS = 999 # API가 한 번에 가져올 수 있는 최대 데이터 수
 
@@ -505,3 +510,4 @@ else:
 
 st.markdown("---")
 st.write("by.사업개발팀 😊")
+
