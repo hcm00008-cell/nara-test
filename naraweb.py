@@ -146,7 +146,7 @@ with st.sidebar:
             z-index: 9999;
             box-shadow: 0 2px 6px rgba(0,0,0,0.12);
         ">
-            "by. 문한용♥
+            "by. 솔루션사업부문
         </div>
         """,
         unsafe_allow_html=True
@@ -448,6 +448,7 @@ if not st.session_state.data_df.empty:
 
 else:
     st.info("용역명과 조회 기간을 설정한 뒤 '검색 시작'을 눌러주세요.")
+
 
 
 
