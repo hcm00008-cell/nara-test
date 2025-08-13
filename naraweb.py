@@ -403,7 +403,8 @@ if not st.session_state.data_df.empty:
         df_page.insert(0, '순번', range(start_index + 1, start_index + 1 + len(df_page)))
 
     cols_to_display = ['순번'] + [c for c in display_columns_map.keys() if c in df_page.columns]
-    import pandas as pd
+    df_display = df_page[cols_to_display].copy()
+    df_display.rename(columns={**display_columns_map, '순번': '순번'}, inplace=True)
     
     # 안전하게 변수 존재 확인 및 준비
     if 'df_formatted_display' not in globals() and 'df_formatted_display' not in locals():
@@ -476,6 +477,7 @@ if not st.session_state.data_df.empty:
 
 else:
     st.info("용역명과 조회 기간을 설정한 뒤 '검색 시작'을 눌러주세요.")
+
 
 
 
