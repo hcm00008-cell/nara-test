@@ -418,29 +418,25 @@ if not st.session_state.data_df.empty:
             df_display[col] = df_display[col].apply(lambda x: f"{int(float(str(x).replace(',', ''))):,}" if pd.notnull(x) and str(x).replace('.', '').replace(',', '').isdigit() else (str(x) if str(x).strip() == '0' else ''))
 
     # 1. 기본 인덱스 초기화 함수
-    def prepare_df_for_display(df, items_per_page=50):
-        if df.empty:
-            return df
-        # 순번 컬럼이 있으면 그대로, 없으면 생성
-        if '순번' not in df.columns:
-            df.insert(0, '순번', range(1, len(df)+1))
-        # 기본 인덱스 제거
-        df = df.reset_index(drop=True)
-        return df
+    # def prepare_df_for_display(df, items_per_page=50):
+    #     if df.empty:
+    #         return df
+    #     # 순번 컬럼이 있으면 그대로, 없으면 생성
+    #     if '순번' not in df.columns:
+    #         df.insert(0, '순번', range(1, len(df)+1))
+    #     # 기본 인덱스 제거
+    #     df = df.reset_index(drop=True)
+    #     return df
     
-    # 2. df 준비
     items_per_page = st.session_state.get('items_per_page_option', 50)
-    df_for_display = prepare_df_for_display(df_display.copy(), items_per_page)
+    ROW_PX = 30
+    table_height = ROW_PX * int(items_per_page) + 60  # 헤더 여유 포함
     
-    # 3. st.dataframe 호출 (높이 50행 기준)
-    row_height = 30
-    height = row_height * items_per_page
     gb = GridOptionsBuilder.from_dataframe(df_display)
-    gb.configure_pagination(paginationAutoPageSize=False, paginationPageSize=items_per_page)
-    gb.configure_grid_options(domLayout='normal')
+    gb.configure_pagination(paginationAutoPageSize=False, paginationPageSize=int(items_per_page))
     grid_options = gb.build()
     
-    AgGrid(df_display, gridOptions=grid_options, fit_columns_on_grid_load=True)
+    AgGrid(df_display, gridOptions=grid_options, fit_columns_on_grid_load=True, height=int(table_height))
 
     # 페이지네이션 UI (가운데 정렬)
     st.markdown("<br>", unsafe_allow_html=True)
@@ -477,6 +473,7 @@ if not st.session_state.data_df.empty:
 
 else:
     st.info("용역명과 조회 기간을 설정한 뒤 '검색 시작'을 눌러주세요.")
+
 
 
 
