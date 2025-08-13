@@ -411,12 +411,25 @@ if not st.session_state.data_df.empty:
         if col in df_display.columns:
             df_display[col] = df_display[col].apply(lambda x: f"{int(float(str(x).replace(',', ''))):,}" if pd.notnull(x) and str(x).replace('.', '').replace(',', '').isdigit() else (str(x) if str(x).strip() == '0' else ''))
 
-    # 화면에서 보여줄 행 수에 맞춰 데이터프레임 높이 지정
-    ROW_PX = 30  # 한 행당 픽셀 높이(필요하면 28~36 범위로 조정)
-    items_to_show = st.session_state.items_per_page_option  # 기본 50 (위에서 설정)
-    table_height = ROW_PX * items_to_show
+    # --- 테이블 높이(반응형) 계산 예제 ---
+    ROW_PX = 30  # 한 행당 픽셀 높이(필요시 28~32로 조정)
+    items_to_show = st.session_state.items_per_page_option  # 기본 50으로 설정되어 있을 것
+    calculated_height = ROW_PX * items_to_show  # 50 * 30 = 1500px 예시
     
-    # df_formatted_display 는 화면에 보여줄 최종 DataFrame (이미 기존 코드에서 생성됨)
+    # 모바일/작은 화면 고려: 최대 높이 제한 적용
+    # (예: 데스크톱은 최대 1500, 모바일은 최대 900 정도로 제한)
+    MAX_DESKTOP_HEIGHT = 1500
+    MAX_MOBILE_HEIGHT = 900
+    
+    # 간단한 전략: 전체 높이는 계산된 값과 데스크톱 최대 중 작은 값을 쓰고,
+    # 그 값과 모바일 최대 중 가장 작은 값을 선택한다.
+    # 결국 table_height = min(calculated_height, MAX_DESKTOP_HEIGHT, MAX_MOBILE_HEIGHT)
+    table_height = min(calculated_height, MAX_DESKTOP_HEIGHT, MAX_MOBILE_HEIGHT)
+    
+    # 또는 단순화: table_height = min(calculated_height, 900) 로 바로 쓰기도 함
+    # table_height = min(calculated_height, 900)
+    
+    # 실제로 테이블을 표시할 때 height 인자로 전달
     st.dataframe(df_formatted_display, use_container_width=True, height=table_height)
 
     # 페이지네이션 UI (가운데 정렬)
@@ -454,6 +467,7 @@ if not st.session_state.data_df.empty:
 
 else:
     st.info("용역명과 조회 기간을 설정한 뒤 '검색 시작'을 눌러주세요.")
+
 
 
 
