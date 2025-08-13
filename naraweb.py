@@ -8,7 +8,7 @@ import pandas as pd
 import streamlit as st
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
-from st_aggrid import AgGrid, GridOptionsBuilder
+from st_aggrid import AgGrid, GridOptionsBuilder, JsCode
 
 # --- 환경 로드 (.env 사용 시) ---
 load_dotenv()  # 로컬에서 .env 파일을 사용하는 경우에 유용
@@ -413,10 +413,14 @@ if not st.session_state.data_df.empty:
     # 기본 인덱스 제거
     df_display = df_display.reset_index(drop=True).copy()
     
-    # ✅ 한글 컬럼명 기준으로 숫자 변환
-    for col in ['총계약금액', '금차계약금액']:
+    for col in DOWNLOAD_AMOUNT_ORIGINAL_COLS:
         if col in df_display.columns:
-            df_display[col] = pd.to_numeric(df_display[col].astype(str).str.replace(',', ''), errors='coerce')
+            df_display[col] = pd.to_numeric(
+                df_display[col].astype(str).str.replace(',', '').str.strip(),
+                errors='coerce'   # 변환 불가하면 NaN
+            )
+    st.sidebar.write({c: str(df_display[c].dtype) for c in DOWNLOAD_AMOUNT_ORIGINAL_COLS if c in df_display.columns})
+    st.sidebar.write(df_display[DOWNLOAD_AMOUNT_ORIGINAL_COLS].head().to_dict())
     
     # AgGrid 옵션 설정
     items_per_page = st.session_state.get('items_per_page_option', 50)
@@ -426,21 +430,29 @@ if not st.session_state.data_df.empty:
     gb = GridOptionsBuilder.from_dataframe(df_display)
     gb.configure_pagination(paginationAutoPageSize=False, paginationPageSize=int(items_per_page))
     
-    # ✅ AgGrid에서 천단위 콤마 포맷 + 우측정렬
-    for col in ['총계약금액', '금차계약금액']:
+    # JS 포맷터(숫자 유지, 화면 포맷)
+    format_js = JsCode("""
+    function(params) {
+        if (params.value === null || params.value === undefined || params.value === '') {
+            return '';
+        }
+        return Number(params.value).toLocaleString('ko-KR');
+    }
+    """)
+    
+    for col in DOWNLOAD_AMOUNT_ORIGINAL_COLS:
         if col in df_display.columns:
             gb.configure_column(
-            col,
-            valueFormatter='(params) => (params.value != null) ? params.value.toLocaleString() : ""',
-            cellStyle={'textAlign': 'right'}
+                col,
+                valueFormatter=format_js,
+                cellStyle={'textAlign': 'right'}
             )
     
-    # 순번 우측정렬
+    # 순번 우측정렬 원하면
     if '순번' in df_display.columns:
         gb.configure_column('순번', cellStyle={'textAlign': 'right'})
     
     grid_options = gb.build()
-    
     AgGrid(df_display, gridOptions=grid_options, fit_columns_on_grid_load=True, height=int(table_height))
 
 
@@ -479,6 +491,7 @@ if not st.session_state.data_df.empty:
 
 else:
     st.info("용역명과 조회 기간을 설정한 뒤 '검색 시작'을 눌러주세요.")
+
 
 
 
