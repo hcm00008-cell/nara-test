@@ -450,8 +450,31 @@ if not st.session_state.data_df.empty:
     if not df_page.empty:
         if '순번' not in df_page.columns:
             df_page.insert(0, '순번', range(start_index + 1, start_index + 1 + len(df_page)))
-    df_display = df_page[cols_to_display].copy()
-    df_display.rename(columns={**display_columns_map, '순번': '순번'}, inplace=True)
+    
+    if 'df_display' not in globals() and 'df_display' not in locals():
+    st.sidebar.write("DEBUG: df_display 변수가 아직 정의되어 있지 않습니다.")
+    # 필요하면 빈 데이터프레임 생성(테스트용, 실제 로직에서는 권장 안 함)
+    # df_display = pd.DataFrame()
+    else:
+        # 존재는 하는데 DataFrame인지 확인
+        if not hasattr(df_display, 'columns'):
+            st.sidebar.write("DEBUG: df_display가 DataFrame이 아닙니다. 타입:", type(df_display))
+            # 여기서 df_display 내용을 간단히 보여줘서 원인 파악
+            try:
+                st.sidebar.write("DEBUG df_display repr:", repr(df_display)[:1000])
+            except Exception:
+                pass
+        else:
+            st.sidebar.write("DEBUG: df_display.columns =", list(df_display.columns))
+            # 이제 안전하게 체크 가능
+            if '수요기관명' in df_display.columns:
+                # 기존 코드 이어서 실행
+                pass
+            else:
+                st.sidebar.write("DEBUG: '수요기관명' 컬럼이 없습니다. 다음 단계에서 추가해 주세요.")
+    
+    
+
     
     # 예: 기존 cols_to_display 생성 직후에 새 컬럼 추가
     # 기존 로직이 cols_to_display를 생성했다면
@@ -464,10 +487,8 @@ if not st.session_state.data_df.empty:
             cols_to_display.append('수요기관구분')
     # 그리고 df_display = df_page[cols_to_display].copy() 등 기존 흐름 유지
 
-    
-    
-
-    
+    df_display = df_page[cols_to_display].copy()
+    df_display.rename(columns={**display_columns_map, '순번': '순번'}, inplace=True)    
     # ===== 화면용 페이지 데이터(df_display)에 수요기관명/구분 추가 =====
     # df_display는 지금 네 코드에서 만들어진 페이지 슬라이스 변수임
     src = None
@@ -551,5 +572,6 @@ if not st.session_state.data_df.empty:
 
 else:
     st.info("용역명과 조회 기간을 설정한 뒤 '검색 시작'을 눌러주세요.")
+
 
 
