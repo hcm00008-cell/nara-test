@@ -107,31 +107,6 @@ INSTITUTION_TYPES = {
     "기타기관": "72",
 }
 
-# ===== 수요기관목록 파싱 유틸 함수 =====
-def parse_dminstt(entry):
-    """
-    entry 예: "[1^4880000^전라남도 고흥군^지방자치단체^재무과^류연호^0618305274]"
-    반환: (수요기관명, 수요기관구분) 예: ("전라남도 고흥군", "지방자치단체")
-    안전 처리: 비어있거나 형식이 안 맞으면 (pd.NA, pd.NA)
-    """
-    import pandas as _pd
-    if entry is None:
-        return _pd.NA, _pd.NA
-    s = str(entry).strip()
-    if s == "" or s.lower() == "nan":
-        return _pd.NA, _pd.NA
-    # 대괄호 제거
-    if s.startswith('[') and s.endswith(']'):
-        s = s[1:-1]
-    # 여러 항목 존재 가능: '][' 분리로 첫 블록만 사용
-    first = s.split('][')[0]
-    parts = [p.strip() for p in first.split('^')]
-    # 안전 인덱스 접근
-    name = parts[2] if len(parts) > 2 and parts[2] != '' else _pd.NA
-    kind = parts[3] if len(parts) > 3 and parts[3] != '' else _pd.NA
-    return name, kind
-
-
 # --- Streamlit 페이지 설정 ---
 st.set_page_config(page_title="나라장터 계약 내역 조회", layout="wide")
 st.title("🏛️ 나라장터 용역 계약 내역 조회")
@@ -348,27 +323,6 @@ if st.session_state.search_button_clicked:
         st.cache_data.clear()
         with st.spinner("데이터 조회 중..."):
             df_fetched = get_contract_data(start_date, end_date, contract_name.strip(), inst_to_api)
-            # ===== 전체 데이터(다운로드용)에 수요기관명/구분 추가 =====
-            df_all = df_fetched.copy()  # 이미 있는 변수 이름이면 그대로 사용
-            
-            # 컬럼명 후보: 'dminsttList' 또는 '수요기관목록' 중 실제 컬럼을 찾아서 사용
-            source_col = None
-            for c in ['dminsttList', '수요기관목록']:
-                if c in df_all.columns:
-                    source_col = c
-                    break
-            
-            if source_col:
-                parsed = df_all[source_col].apply(parse_dminstt)
-                df_all['수요기관명'], df_all['수요기관구분'] = zip(*parsed)
-            else:
-                df_all['수요기관명'] = pd.NA
-                df_all['수요기관구분'] = pd.NA
-            
-            # 숫자 컬럼 등 필요 변환(기존 처리 유지)
-            for col in DOWNLOAD_AMOUNT_ORIGINAL_COLS:
-                if col in df_all.columns:
-                    df_all[col] = pd.to_numeric(df_all[col].astype(str).str.replace(',', ''), errors='coerce')    
             st.session_state.data_df = df_fetched.copy()
             st.session_state.filtered_data_df = df_fetched.copy()
             st.session_state.current_page = 1
@@ -451,101 +405,10 @@ if not st.session_state.data_df.empty:
         if '순번' not in df_page.columns:
             df_page.insert(0, '순번', range(start_index + 1, start_index + 1 + len(df_page)))
     
-    if 'df_display' not in globals() and 'df_display' not in locals():
-    st.sidebar.write("DEBUG: df_display 변수가 아직 정의되어 있지 않습니다.")
-    # 필요하면 빈 데이터프레임 생성(테스트용, 실제 로직에서는 권장 안 함)
-    # df_display = pd.DataFrame()
-    else:
-        # 존재는 하는데 DataFrame인지 확인
-        if not hasattr(df_display, 'columns'):
-            st.sidebar.write("DEBUG: df_display가 DataFrame이 아닙니다. 타입:", type(df_display))
-            # 여기서 df_display 내용을 간단히 보여줘서 원인 파악
-            try:
-                st.sidebar.write("DEBUG df_display repr:", repr(df_display)[:1000])
-            except Exception:
-                pass
-        else:
-            st.sidebar.write("DEBUG: df_display.columns =", list(df_display.columns))
-            # 이제 안전하게 체크 가능
-            if '수요기관명' in df_display.columns:
-                # 기존 코드 이어서 실행
-                pass
-            else:
-                st.sidebar.write("DEBUG: '수요기관명' 컬럼이 없습니다. 다음 단계에서 추가해 주세요.")
-    
-    
-
-    
-    # 예: 기존 cols_to_display 생성 직후에 새 컬럼 추가
-    # 기존 로직이 cols_to_display를 생성했다면
-    # 아래처럼 수요기관명/구분이 존재하면 넣어줌
-    if '수요기관명' in df_display.columns:
-        if '수요기관명' not in cols_to_display:
-            cols_to_display.append('수요기관명')
-    if '수요기관구분' in df_display.columns:
-        if '수요기관구분' not in cols_to_display:
-            cols_to_display.append('수요기관구분')
-    # 그리고 df_display = df_page[cols_to_display].copy() 등 기존 흐름 유지
-
-# parse 함수 (한 번만 정의해두면 됨, 파일 맨 위에 올려도 OK)
-def parse_dminstt(entry):
-    import pandas as _pd
-    if entry is None:
-        return _pd.NA, _pd.NA
-    s = str(entry).strip()
-    if s == "" or s.lower() == "nan":
-        return _pd.NA, _pd.NA
-    if s.startswith('[') and s.endswith(']'):
-        s = s[1:-1]
-    # 첫 블록만 사용
-    first = s.split('][')[0]
-    parts = [p.strip() for p in first.split('^')]
-    name = parts[2] if len(parts) > 2 and parts[2] != '' else _pd.NA
-    kind = parts[3] if len(parts) > 3 and parts[3] != '' else _pd.NA
-    return name, kind
-    
-    # 페이지용 df_page를 만든 직후에 이걸 넣는다
-    src = None
-    for c in ['dminsttList', '수요기관목록']:
-        if c in df_page.columns:
-            src = c
-            break
-    
-    if src:
-        parsed_page = df_page[src].apply(parse_dminstt)
-        # 결과를 안전하게 분해해서 컬럼 추가
-        df_page['수요기관명'], df_page['수요기관구분'] = zip(*parsed_page)
-    else:
-        df_page['수요기관명'] = pd.NA
-        df_page['수요기관구분'] = pd.NA
-    
-    # 그 다음 기존대로 df_display 만들기
-    cols_to_display = ['순번'] + [c for c in display_columns_map.keys() if c in df_page.columns]
-    # 여기에 새 컬럼도 포함시키려면
-    if '수요기관명' in df_page.columns and '수요기관명' not in cols_to_display:
-        cols_to_display.append('수요기관명')
-    if '수요기관구분' in df_page.columns and '수요기관구분' not in cols_to_display:
-        cols_to_display.append('수요기관구분')
+    cols_to_display = ['순번'] + [c for c in display_columns_map.keys() if c in df_page.columns and c != '순번']
     
     df_display = df_page[cols_to_display].copy()
-
-    df_display = df_page[cols_to_display].copy()
-    df_display.rename(columns={**display_columns_map, '순번': '순번'}, inplace=True)    
-    # ===== 화면용 페이지 데이터(df_display)에 수요기관명/구분 추가 =====
-    # df_display는 지금 네 코드에서 만들어진 페이지 슬라이스 변수임
-    src = None
-    for c in ['dminsttList', '수요기관목록']:
-        if c in df_display.columns:
-            src = c
-            break
-    
-    if src:
-        parsed_page = df_display[src].apply(parse_dminstt)
-        df_display['수요기관명'], df_display['수요기관구분'] = zip(*parsed_page)
-    else:
-        df_display['수요기관명'] = pd.NA
-        df_display['수요기관구분'] = pd.NA
-    
+    df_display.rename(columns={**display_columns_map, '순번': '순번'}, inplace=True)
     
     # 기본 인덱스 제거
     df_display = df_display.reset_index(drop=True).copy()
@@ -614,7 +477,3 @@ def parse_dminstt(entry):
 
 else:
     st.info("용역명과 조회 기간을 설정한 뒤 '검색 시작'을 눌러주세요.")
-
-
-
-
