@@ -450,6 +450,8 @@ if not st.session_state.data_df.empty:
     if not df_page.empty:
         if '순번' not in df_page.columns:
             df_page.insert(0, '순번', range(start_index + 1, start_index + 1 + len(df_page)))
+    df_display = df_page[cols_to_display].copy()
+    df_display.rename(columns={**display_columns_map, '순번': '순번'}, inplace=True)
     
     # 예: 기존 cols_to_display 생성 직후에 새 컬럼 추가
     # 기존 로직이 cols_to_display를 생성했다면
@@ -464,8 +466,7 @@ if not st.session_state.data_df.empty:
 
     
     
-    df_display = df_page[cols_to_display].copy()
-    df_display.rename(columns={**display_columns_map, '순번': '순번'}, inplace=True)
+
     
     # ===== 화면용 페이지 데이터(df_display)에 수요기관명/구분 추가 =====
     # df_display는 지금 네 코드에서 만들어진 페이지 슬라이스 변수임
@@ -550,4 +551,5 @@ if not st.session_state.data_df.empty:
 
 else:
     st.info("용역명과 조회 기간을 설정한 뒤 '검색 시작'을 눌러주세요.")
+
 
