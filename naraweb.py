@@ -398,18 +398,21 @@ if not st.session_state.data_df.empty:
     start_index = (st.session_state.current_page - 1) * items_per_page
     end_index = min(start_index + items_per_page, total_rows)
     df_page = st.session_state.filtered_data_df.iloc[start_index:end_index].copy()
+    # 순번 추가하는 부분(기존 유지)
     if not df_page.empty:
-        # '순번' 컬럼이 이미 있으면 중복 추가하지 않음
         if '순번' not in df_page.columns:
             df_page.insert(0, '순번', range(start_index + 1, start_index + 1 + len(df_page)))
     
-    # 표시할 컬럼 리스트 - '순번'이 중복 들어가지 않도록 필터링
-    cols_to_display = ['순번'] + [col for col in display_columns_map.keys() if col in df_page.columns and col != '순번']
+    cols_to_display = ['순번'] + [c for c in display_columns_map.keys() if c in df_page.columns and c != '순번']
     
     df_display = df_page[cols_to_display].copy()
-    
-    # 컬럼명 변경 (순번 제외)
     df_display.rename(columns={**display_columns_map, '순번': '순번'}, inplace=True)
+    
+    # 인덱스 초기화 (기본 숫자 인덱스 안 보이도록)
+    df_display = df_display.reset_index(drop=True)
+    
+    # st.dataframe 출력 (50행 높이 적용 등 기존 옵션 유지)
+    st.dataframe(df_display, use_container_width=True, height=table_height)
 
     # 화면용 금액 포맷(콤마)
     for col in ['총계약금액', '금차계약금액']:
@@ -467,6 +470,7 @@ if not st.session_state.data_df.empty:
 
 else:
     st.info("용역명과 조회 기간을 설정한 뒤 '검색 시작'을 눌러주세요.")
+
 
 
 
