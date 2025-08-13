@@ -428,32 +428,16 @@ if not st.session_state.data_df.empty:
     table_height = ROW_PX * int(items_per_page) + 60
     
     gb = GridOptionsBuilder.from_dataframe(df_display)
-    gb.configure_pagination(paginationAutoPageSize=False, paginationPageSize=int(items_per_page))
-    
-    # JS 포맷터(숫자 유지, 화면 포맷)
+    # 컬럼 옵션 등 설정
     format_js = JsCode("""
     function(params) {
-        if (params.value === null || params.value === undefined || params.value === '') {
-            return '';
-        }
-        return Number(params.value).toLocaleString('ko-KR');
+      return params.value != null ? Number(params.value).toLocaleString('ko-KR') : '';
     }
     """)
+    gb.configure_column('총계약금액', valueFormatter=format_js, cellStyle={'textAlign': 'right'})
     
-    for col in DOWNLOAD_AMOUNT_ORIGINAL_COLS:
-        if col in df_display.columns:
-            gb.configure_column(
-                col,
-                valueFormatter=format_js,
-                cellStyle={'textAlign': 'right'}
-            )
-    
-    # 순번 우측정렬 원하면
-    if '순번' in df_display.columns:
-        gb.configure_column('순번', cellStyle={'textAlign': 'right'})
-    
-    grid_options = gb.build()
-    AgGrid(df_display, gridOptions=grid_options, fit_columns_on_grid_load=True, height=int(table_height))
+    gridOptions = gb.build()
+    AgGrid(df_display, gridOptions=gridOptions, fit_columns_on_grid_load=True, height=600, allow_unsafe_jscode=True)
 
 
     # 페이지네이션 UI (가운데 정렬)
@@ -491,6 +475,7 @@ if not st.session_state.data_df.empty:
 
 else:
     st.info("용역명과 조회 기간을 설정한 뒤 '검색 시작'을 눌러주세요.")
+
 
 
 
