@@ -435,6 +435,8 @@ if not st.session_state.data_df.empty:
     }
     """)
     gb.configure_column('총계약금액', valueFormatter=format_js, cellStyle={'textAlign': 'right'})
+    gb.configure_column('금차계약금액', valueFormatter=format_js, cellStyle={'textAlign': 'right'})
+    
     
     gridOptions = gb.build()
     AgGrid(df_display, gridOptions=gridOptions, fit_columns_on_grid_load=True, height=600, allow_unsafe_jscode=True)
@@ -475,6 +477,7 @@ if not st.session_state.data_df.empty:
 
 else:
     st.info("용역명과 조회 기간을 설정한 뒤 '검색 시작'을 눌러주세요.")
+
 
 
 
