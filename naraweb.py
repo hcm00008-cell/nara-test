@@ -412,10 +412,10 @@ if not st.session_state.data_df.empty:
 
     
 
-    # 화면용 금액 포맷(콤마)
-    for col in ['총계약금액', '금차계약금액']:
-        if col in df_display.columns:
-            df_display[col] = df_display[col].apply(lambda x: f"{int(float(str(x).replace(',', ''))):,}" if pd.notnull(x) and str(x).replace('.', '').replace(',', '').isdigit() else (str(x) if str(x).strip() == '0' else ''))
+    # # 화면용 금액 포맷(콤마)
+    # for col in ['총계약금액', '금차계약금액']:
+    #     if col in df_display.columns:
+    #         df_display[col] = df_display[col].apply(lambda x: f"{int(float(str(x).replace(',', ''))):,}" if pd.notnull(x) and str(x).replace('.', '').replace(',', '').isdigit() else (str(x) if str(x).strip() == '0' else ''))
 
     # 1. 기본 인덱스 초기화 함수
     # def prepare_df_for_display(df, items_per_page=50):
@@ -434,8 +434,11 @@ if not st.session_state.data_df.empty:
     
     gb = GridOptionsBuilder.from_dataframe(df_display)
     gb.configure_pagination(paginationAutoPageSize=False, paginationPageSize=int(items_per_page))
+    for col in DOWNLOAD_AMOUNT_ORIGINAL_COLS:
+    if col in df_display.columns:
+        gb.configure_column(col, valueFormatter="(params) => params.value != null ? params.value.toLocaleString() : ''")
+
     grid_options = gb.build()
-    
     AgGrid(df_display, gridOptions=grid_options, fit_columns_on_grid_load=True, height=int(table_height))
 
     # 페이지네이션 UI (가운데 정렬)
@@ -473,6 +476,7 @@ if not st.session_state.data_df.empty:
 
 else:
     st.info("용역명과 조회 기간을 설정한 뒤 '검색 시작'을 눌러주세요.")
+
 
 
 
