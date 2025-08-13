@@ -408,8 +408,7 @@ if not st.session_state.data_df.empty:
     df_display = df_page[cols_to_display].copy()
     df_display.rename(columns={**display_columns_map, '순번': '순번'}, inplace=True)
     
-    # 인덱스 초기화 (기본 숫자 인덱스 안 보이도록)
-    df_display = df_display.reset_index(drop=True)
+
     
 
     # 화면용 금액 포맷(콤마)
@@ -426,6 +425,9 @@ if not st.session_state.data_df.empty:
         table_height = min(int(ROW_PX * int(items_to_show)), 1500)
     except:
         table_height = 900
+
+    # 인덱스 초기화 (기본 숫자 인덱스 안 보이도록)
+    df_display = df_display.reset_index(drop=True)
     
     # 안전 출력 (Streamlit 버그 우회 포함)
     try:
@@ -468,6 +470,7 @@ if not st.session_state.data_df.empty:
 
 else:
     st.info("용역명과 조회 기간을 설정한 뒤 '검색 시작'을 눌러주세요.")
+
 
 
 
