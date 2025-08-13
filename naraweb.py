@@ -118,7 +118,7 @@ if 'filtered_data_df' not in st.session_state:
 if 'current_page' not in st.session_state:
     st.session_state.current_page = 1
 if 'items_per_page_option' not in st.session_state:
-    st.session_state.items_per_page_option = 10
+    st.session_state.items_per_page_option = 50
 if 'search_button_clicked' not in st.session_state:
     st.session_state.search_button_clicked = False
 if 'filter_column' not in st.session_state:
@@ -411,7 +411,13 @@ if not st.session_state.data_df.empty:
         if col in df_display.columns:
             df_display[col] = df_display[col].apply(lambda x: f"{int(float(str(x).replace(',', ''))):,}" if pd.notnull(x) and str(x).replace('.', '').replace(',', '').isdigit() else (str(x) if str(x).strip() == '0' else ''))
 
-    st.dataframe(df_display, use_container_width=True)
+    # 화면에서 보여줄 행 수에 맞춰 데이터프레임 높이 지정
+    ROW_PX = 30  # 한 행당 픽셀 높이(필요하면 28~36 범위로 조정)
+    items_to_show = st.session_state.items_per_page_option  # 기본 50 (위에서 설정)
+    table_height = ROW_PX * items_to_show
+    
+    # df_formatted_display 는 화면에 보여줄 최종 DataFrame (이미 기존 코드에서 생성됨)
+    st.dataframe(df_formatted_display, use_container_width=True, height=table_height)
 
     # 페이지네이션 UI (가운데 정렬)
     st.markdown("<br>", unsafe_allow_html=True)
@@ -448,6 +454,7 @@ if not st.session_state.data_df.empty:
 
 else:
     st.info("용역명과 조회 기간을 설정한 뒤 '검색 시작'을 눌러주세요.")
+
 
 
 
