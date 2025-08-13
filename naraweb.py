@@ -400,11 +400,11 @@ if not st.session_state.data_df.empty:
     end_index = min(start_index + items_per_page, total_rows)
     df_page = st.session_state.filtered_data_df.iloc[start_index:end_index].copy()
     # # 순번 추가하는 부분(기존 유지)
-    # if not df_page.empty:
-    #     if '순번' not in df_page.columns:
-    #         df_page.insert(0, '순번', range(start_index + 1, start_index + 1 + len(df_page)))
+    if not df_page.empty:
+        if '순번' not in df_page.columns:
+            df_page.insert(0, '순번', range(start_index + 1, start_index + 1 + len(df_page)))
     
-    # cols_to_display = ['순번'] + [c for c in display_columns_map.keys() if c in df_page.columns and c != '순번']
+    cols_to_display = ['순번'] + [c for c in display_columns_map.keys() if c in df_page.columns and c != '순번']
     
     df_display = df_page[cols_to_display].copy()
     df_display.rename(columns={**display_columns_map, '순번': '순번'}, inplace=True)
@@ -413,9 +413,9 @@ if not st.session_state.data_df.empty:
     #    만약 다른 변수명을 쓰면 그 변수명으로 바꿔서 사용하세요.
     
     # 안전: 순번 컬럼 한 번만 만들기
-    if not df_display.empty:
-        if '순번' not in df_display.columns:
-            df_display.insert(0, '순번', range(start_index + 1, start_index + 1 + len(df_display)))
+    # if not df_display.empty:
+    #     if '순번' not in df_display.columns:
+    #         df_display.insert(0, '순번', range(start_index + 1, start_index + 1 + len(df_display)))
     
     # 기본 인덱스 제거 (왼쪽 index 안 보이게)
     df_display = df_display.reset_index(drop=True)
@@ -489,6 +489,7 @@ if not st.session_state.data_df.empty:
 
 else:
     st.info("용역명과 조회 기간을 설정한 뒤 '검색 시작'을 눌러주세요.")
+
 
 
 
