@@ -433,7 +433,7 @@ if not st.session_state.data_df.empty:
     gb = GridOptionsBuilder.from_dataframe(df_display)
     gb.configure_pagination(paginationAutoPageSize=False, paginationPageSize=int(items_per_page))
     
-    # 금액 컬럼: 화면 포맷(콤마) + 우측 정렬 (값은 숫자 유지)
+    # 금액 컬럼: 화면 포맷(콤마) + 우측 정렬
     for col in DOWNLOAD_AMOUNT_ORIGINAL_COLS:
         if col in df_display.columns:
             gb.configure_column(
@@ -442,17 +442,12 @@ if not st.session_state.data_df.empty:
                 cellStyle={'textAlign': 'right'}
             )
     
-    # 순번 컬럼도 우측이나 왼쪽 정렬 원하면 설정 (예: 왼쪽은 디폴트)
-    gb.configure_column('순번', cellStyle={'textAlign': 'right'})  # 순번도 오른쪽 정렬 원하면
+    # 순번 컬럼 우측정렬 원하면
+    if '순번' in df_display.columns:
+        gb.configure_column('순번', cellStyle={'textAlign': 'right'})
     
     grid_options = gb.build()
-    
-    AgGrid(
-        df_display,
-        gridOptions=grid_options,
-        fit_columns_on_grid_load=True,
-        height=int(table_height)
-    )
+    AgGrid(df_display, gridOptions=grid_options, fit_columns_on_grid_load=True, height=int(table_height))
 
     # 페이지네이션 UI (가운데 정렬)
     st.markdown("<br>", unsafe_allow_html=True)
@@ -489,6 +484,7 @@ if not st.session_state.data_df.empty:
 
 else:
     st.info("용역명과 조회 기간을 설정한 뒤 '검색 시작'을 눌러주세요.")
+
 
 
 
