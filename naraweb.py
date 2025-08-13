@@ -430,9 +430,9 @@ if not st.session_state.data_df.empty:
     for col in ['총계약금액', '금차계약금액']:
         if col in df_display.columns:
             gb.configure_column(
-                col,
-                valueFormatter="(params) => (params.value !== null && params.value !== undefined) ? params.value.toLocaleString() : ''",
-                cellStyle={'textAlign': 'right'}
+            col,
+            valueFormatter='(params) => (params.value != null) ? params.value.toLocaleString() : ""',
+            cellStyle={'textAlign': 'right'}
             )
     
     # 순번 우측정렬
@@ -479,6 +479,7 @@ if not st.session_state.data_df.empty:
 
 else:
     st.info("용역명과 조회 기간을 설정한 뒤 '검색 시작'을 눌러주세요.")
+
 
 
 
