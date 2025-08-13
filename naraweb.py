@@ -435,8 +435,8 @@ if not st.session_state.data_df.empty:
     gb = GridOptionsBuilder.from_dataframe(df_display)
     gb.configure_pagination(paginationAutoPageSize=False, paginationPageSize=int(items_per_page))
     for col in DOWNLOAD_AMOUNT_ORIGINAL_COLS:
-    if col in df_display.columns:
-        gb.configure_column(col, valueFormatter="(params) => params.value != null ? params.value.toLocaleString() : ''")
+        if col in df_display.columns:
+            gb.configure_column(col, valueFormatter="(params) => params.value != null ? params.value.toLocaleString() : ''")
 
     grid_options = gb.build()
     AgGrid(df_display, gridOptions=grid_options, fit_columns_on_grid_load=True, height=int(table_height))
@@ -476,6 +476,7 @@ if not st.session_state.data_df.empty:
 
 else:
     st.info("용역명과 조회 기간을 설정한 뒤 '검색 시작'을 눌러주세요.")
+
 
 
 
