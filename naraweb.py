@@ -406,28 +406,17 @@ if not st.session_state.data_df.empty:
     df_display = df_page[cols_to_display].copy()
     df_display.rename(columns={**display_columns_map, '순번': '순번'}, inplace=True)
     
-    # 안전하게 변수 존재 확인 및 준비
-    if 'df_formatted_display' not in globals() and 'df_formatted_display' not in locals():
-        # df_formatted_display가 없으면 df_display가 있는지 확인하고 복사->가공
-        if 'df_display' in globals() or 'df_display' in locals():
-            df_formatted_display = df_display.copy()
-        else:
-            # 둘 다 없으면 빈 데이터프레임으로 처리 (에러 대신 빈표시)
-            df_formatted_display = pd.DataFrame()
-    
-    # (선택) 화면에 보여줄 컬럼명 한글로 바꾸는 작업이 필요하면 여기에 적용
-    # 예: df_formatted_display = df_formatted_display.rename(columns=display_columns_map)
-    
-    # (선택) 금액 포맷: 화면용으로 콤마 찍기
-    amount_cols = ['총계약금액', '금차계약금액']
-    for col in amount_cols:
-        if col in df_formatted_display.columns:
-            df_formatted_display[col] = df_formatted_display[col].apply(
-                lambda x: f"{int(float(str(x).replace(',',''))):,}" 
-                          if pd.notnull(x) and str(x).replace('.', '').replace(',', '').isdigit() 
-                          else (str(x) if str(x).strip() == '0' else '')
-            )
-    
+    cols_to_display = ['순번'] + [c for c in display_columns_map.keys() if c in df_page.columns]
+    df_display = df_page[cols_to_display].copy()
+    df_display.rename(columns={**display_columns_map, '순번': '순번'}, inplace=True)
+
+    # 화면용 금액 포맷(콤마)
+    for col in ['총계약금액', '금차계약금액']:
+        if col in df_display.columns:
+            df_display[col] = df_display[col].apply(lambda x: f"{int(float(str(x).replace(',', ''))):,}" if pd.notnull(x) and str(x).replace('.', '').replace(',', '').isdigit() else (str(x) if str(x).strip() == '0' else ''))
+
+
+
     # 테이블 높이 계산(예: 50행 기본)
     ROW_PX = 30
     items_to_show = st.session_state.get('items_per_page_option', 50)
@@ -438,9 +427,9 @@ if not st.session_state.data_df.empty:
     
     # 안전 출력 (Streamlit 버그 우회 포함)
     try:
-        st.dataframe(df_formatted_display, use_container_width=True, height=table_height)
+        st.dataframe(df_display, use_container_width=True, height=table_height)
     except TypeError:
-        st.dataframe(df_formatted_display, use_container_width=True)
+        st.dataframe(df_display, use_container_width=True)
 
     # 페이지네이션 UI (가운데 정렬)
     st.markdown("<br>", unsafe_allow_html=True)
@@ -477,6 +466,7 @@ if not st.session_state.data_df.empty:
 
 else:
     st.info("용역명과 조회 기간을 설정한 뒤 '검색 시작'을 눌러주세요.")
+
 
 
 
