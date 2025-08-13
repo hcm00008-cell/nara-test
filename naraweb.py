@@ -436,12 +436,8 @@ if not st.session_state.data_df.empty:
     # 금액 컬럼: 화면 포맷(콤마) + 우측 정렬
     for col in DOWNLOAD_AMOUNT_ORIGINAL_COLS:
         if col in df_display.columns:
-            gb.configure_column(
-                col,
-                valueFormatter="(params) => (params.value !== null && params.value !== undefined) ? params.value.toLocaleString() : ''",
-                cellStyle={'textAlign': 'right'}
-            )
-    
+            # 문자열에 콤마 있으면 제거 후 숫자형으로 변환
+            df_display[col] = pd.to_numeric(df_display[col].astype(str).str.replace(',', ''), errors='coerce')
     # 순번 컬럼 우측정렬 원하면
     if '순번' in df_display.columns:
         gb.configure_column('순번', cellStyle={'textAlign': 'right'})
@@ -495,6 +491,7 @@ if not st.session_state.data_df.empty:
 
 else:
     st.info("용역명과 조회 기간을 설정한 뒤 '검색 시작'을 눌러주세요.")
+
 
 
 
