@@ -487,6 +487,48 @@ if not st.session_state.data_df.empty:
             cols_to_display.append('수요기관구분')
     # 그리고 df_display = df_page[cols_to_display].copy() 등 기존 흐름 유지
 
+# parse 함수 (한 번만 정의해두면 됨, 파일 맨 위에 올려도 OK)
+def parse_dminstt(entry):
+    import pandas as _pd
+    if entry is None:
+        return _pd.NA, _pd.NA
+    s = str(entry).strip()
+    if s == "" or s.lower() == "nan":
+        return _pd.NA, _pd.NA
+    if s.startswith('[') and s.endswith(']'):
+        s = s[1:-1]
+    # 첫 블록만 사용
+    first = s.split('][')[0]
+    parts = [p.strip() for p in first.split('^')]
+    name = parts[2] if len(parts) > 2 and parts[2] != '' else _pd.NA
+    kind = parts[3] if len(parts) > 3 and parts[3] != '' else _pd.NA
+    return name, kind
+    
+    # 페이지용 df_page를 만든 직후에 이걸 넣는다
+    src = None
+    for c in ['dminsttList', '수요기관목록']:
+        if c in df_page.columns:
+            src = c
+            break
+    
+    if src:
+        parsed_page = df_page[src].apply(parse_dminstt)
+        # 결과를 안전하게 분해해서 컬럼 추가
+        df_page['수요기관명'], df_page['수요기관구분'] = zip(*parsed_page)
+    else:
+        df_page['수요기관명'] = pd.NA
+        df_page['수요기관구분'] = pd.NA
+    
+    # 그 다음 기존대로 df_display 만들기
+    cols_to_display = ['순번'] + [c for c in display_columns_map.keys() if c in df_page.columns]
+    # 여기에 새 컬럼도 포함시키려면
+    if '수요기관명' in df_page.columns and '수요기관명' not in cols_to_display:
+        cols_to_display.append('수요기관명')
+    if '수요기관구분' in df_page.columns and '수요기관구분' not in cols_to_display:
+        cols_to_display.append('수요기관구분')
+    
+    df_display = df_page[cols_to_display].copy()
+
     df_display = df_page[cols_to_display].copy()
     df_display.rename(columns={**display_columns_map, '순번': '순번'}, inplace=True)    
     # ===== 화면용 페이지 데이터(df_display)에 수요기관명/구분 추가 =====
@@ -572,6 +614,7 @@ if not st.session_state.data_df.empty:
 
 else:
     st.info("용역명과 조회 기간을 설정한 뒤 '검색 시작'을 눌러주세요.")
+
 
 
 
