@@ -8,6 +8,7 @@ import pandas as pd
 import streamlit as st
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
+from st_aggrid import AgGrid, GridOptionsBuilder
 
 # --- 환경 로드 (.env 사용 시) ---
 load_dotenv()  # 로컬에서 .env 파일을 사용하는 경우에 유용
@@ -434,7 +435,12 @@ if not st.session_state.data_df.empty:
     # 3. st.dataframe 호출 (높이 50행 기준)
     row_height = 30
     height = row_height * items_per_page
-    st.dataframe(df_for_display, use_container_width=True, height=height)
+    gb = GridOptionsBuilder.from_dataframe(df_display)
+    gb.configure_pagination(paginationAutoPageSize=False, paginationPageSize=items_per_page)
+    gb.configure_grid_options(domLayout='normal')
+    grid_options = gb.build()
+    
+    AgGrid(df_display, gridOptions=grid_options, fit_columns_on_grid_load=True)
 
     # 페이지네이션 UI (가운데 정렬)
     st.markdown("<br>", unsafe_allow_html=True)
@@ -471,6 +477,7 @@ if not st.session_state.data_df.empty:
 
 else:
     st.info("용역명과 조회 기간을 설정한 뒤 '검색 시작'을 눌러주세요.")
+
 
 
 
