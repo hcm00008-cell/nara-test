@@ -412,9 +412,9 @@ if not st.session_state.data_df.empty:
             df_display[col] = df_display[col].apply(lambda x: f"{int(float(str(x).replace(',', ''))):,}" if pd.notnull(x) and str(x).replace('.', '').replace(',', '').isdigit() else (str(x) if str(x).strip() == '0' else ''))
 
     import pandas as pd
-    st.sidebar.write("DEBUG: type(df_formatted_display) =", type(df_formatted_display))
+    st.sidebar.write("DEBUG: type(df_display) =", type(df_display))
     try:
-        st.sidebar.write("DEBUG: df.shape =", df_formatted_display.shape)
+        st.sidebar.write("DEBUG: df.shape =", df_display.shape)
     except Exception as e:
         st.sidebar.write("DEBUG: df.shape error:", e)
     st.sidebar.write("DEBUG: table_height type =", type(table_height), "value =", repr(table_height))
@@ -439,7 +439,7 @@ if not st.session_state.data_df.empty:
     # table_height = min(calculated_height, 900)
     
     # 실제로 테이블을 표시할 때 height 인자로 전달
-    st.dataframe(df_formatted_display, use_container_width=True, height=table_height)
+    st.dataframe(df_display, use_container_width=True, height=table_height)
 
     # 페이지네이션 UI (가운데 정렬)
     st.markdown("<br>", unsafe_allow_html=True)
@@ -476,6 +476,7 @@ if not st.session_state.data_df.empty:
 
 else:
     st.info("용역명과 조회 기간을 설정한 뒤 '검색 시작'을 눌러주세요.")
+
 
 
 
