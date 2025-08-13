@@ -400,6 +400,7 @@ if not st.session_state.data_df.empty:
     end_index = min(start_index + items_per_page, total_rows)
     df_page = st.session_state.filtered_data_df.iloc[start_index:end_index].copy()
     # # 순번 추가하는 부분(기존 유지)
+    # 기존 순번 추가, 컬럼 순서 지정 등은 동일
     if not df_page.empty:
         if '순번' not in df_page.columns:
             df_page.insert(0, '순번', range(start_index + 1, start_index + 1 + len(df_page)))
@@ -409,15 +410,15 @@ if not st.session_state.data_df.empty:
     df_display = df_page[cols_to_display].copy()
     df_display.rename(columns={**display_columns_map, '순번': '순번'}, inplace=True)
     
-    # 기본 인덱스 제거 (왼쪽 index 안 보이게)
-    df_display = df_display.reset_index(drop=True)
-    df_display = df_display.copy()  # 안전복사
+    # 기본 인덱스 제거
+    df_display = df_display.reset_index(drop=True).copy()
     
-    for col in DOWNLOAD_AMOUNT_ORIGINAL_COLS:
+    # ✅ 한글 컬럼명 기준으로 숫자 변환
+    for col in ['총계약금액', '금차계약금액']:
         if col in df_display.columns:
             df_display[col] = pd.to_numeric(df_display[col].astype(str).str.replace(',', ''), errors='coerce')
-            
-    # 3) AgGrid 옵션 설정 (화면 포맷만, 내부 값은 숫자 유지)
+    
+    # AgGrid 옵션 설정
     items_per_page = st.session_state.get('items_per_page_option', 50)
     ROW_PX = 30
     table_height = ROW_PX * int(items_per_page) + 60
@@ -425,8 +426,8 @@ if not st.session_state.data_df.empty:
     gb = GridOptionsBuilder.from_dataframe(df_display)
     gb.configure_pagination(paginationAutoPageSize=False, paginationPageSize=int(items_per_page))
     
-    # 금액 컬럼: 화면 포맷(콤마) + 우측 정렬, 내부 값은 숫자 유지
-    for col in DOWNLOAD_AMOUNT_ORIGINAL_COLS:
+    # ✅ AgGrid에서 천단위 콤마 포맷 + 우측정렬
+    for col in ['총계약금액', '금차계약금액']:
         if col in df_display.columns:
             gb.configure_column(
                 col,
@@ -434,23 +435,14 @@ if not st.session_state.data_df.empty:
                 cellStyle={'textAlign': 'right'}
             )
     
-    # 순번도 우측 정렬 원하면 설정
+    # 순번 우측정렬
     if '순번' in df_display.columns:
         gb.configure_column('순번', cellStyle={'textAlign': 'right'})
     
     grid_options = gb.build()
-    # 화면용 df가 어떤 상태인지 확인
-    if DEBUG:
-        # 후보 변수들 중 실제 사용되는 변수명으로 바꿔서 쓰세요 (예: df_display 또는 df_formatted_display)
-        st.sidebar.write("DEBUG: 'df_display' in locals/globals?", 'df_display' in globals() or 'df_display' in locals())
-        try:
-            st.sidebar.write("DEBUG: df_display.shape:", df_display.shape)
-            st.sidebar.write("DEBUG: df_display.dtypes:", df_display.dtypes.to_dict())
-            st.sidebar.write("DEBUG: df_display.head:", df_display.head(5).to_dict())
-        except Exception as e:
-            st.sidebar.write("DEBUG: df_display inspect error:", repr(e))
     
     AgGrid(df_display, gridOptions=grid_options, fit_columns_on_grid_load=True, height=int(table_height))
+
 
     # 페이지네이션 UI (가운데 정렬)
     st.markdown("<br>", unsafe_allow_html=True)
@@ -487,6 +479,7 @@ if not st.session_state.data_df.empty:
 
 else:
     st.info("용역명과 조회 기간을 설정한 뒤 '검색 시작'을 눌러주세요.")
+
 
 
 
