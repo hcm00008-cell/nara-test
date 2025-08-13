@@ -399,31 +399,41 @@ if not st.session_state.data_df.empty:
     start_index = (st.session_state.current_page - 1) * items_per_page
     end_index = min(start_index + items_per_page, total_rows)
     df_page = st.session_state.filtered_data_df.iloc[start_index:end_index].copy()
-    # 순번 추가하는 부분(기존 유지)
-    if not df_page.empty:
-        if '순번' not in df_page.columns:
-            df_page.insert(0, '순번', range(start_index + 1, start_index + 1 + len(df_page)))
+    # # 순번 추가하는 부분(기존 유지)
+    # if not df_page.empty:
+    #     if '순번' not in df_page.columns:
+    #         df_page.insert(0, '순번', range(start_index + 1, start_index + 1 + len(df_page)))
     
-    cols_to_display = ['순번'] + [c for c in display_columns_map.keys() if c in df_page.columns and c != '순번']
+    # cols_to_display = ['순번'] + [c for c in display_columns_map.keys() if c in df_page.columns and c != '순번']
     
-    df_display = df_page[cols_to_display].copy()
-    df_display.rename(columns={**display_columns_map, '순번': '순번'}, inplace=True)
+    # df_display = df_page[cols_to_display].copy()
+    # df_display.rename(columns={**display_columns_map, '순번': '순번'}, inplace=True)
     
-
+    # 1) 준비: 페이지슬라이스 df_display가 존재해야 함 (이미 만들어져 있어야 함)
+    #    만약 다른 변수명을 쓰면 그 변수명으로 바꿔서 사용하세요.
     
-    # 1) 숫자형으로 안전하게 변환 (화면용 df_display에 적용)
+    # 안전: 순번 컬럼 한 번만 만들기
+    if not df_display.empty:
+        if '순번' not in df_display.columns:
+            df_display.insert(0, '순번', range(start_index + 1, start_index + 1 + len(df_display)))
+    
+    # 기본 인덱스 제거 (왼쪽 index 안 보이게)
+    df_display = df_display.reset_index(drop=True)
+    
+    # 2) 숫자 컬럼(원본 이름 리스트)을 숫자 타입으로 유지 (콤마 제거 후 변환)
     for col in DOWNLOAD_AMOUNT_ORIGINAL_COLS:
         if col in df_display.columns:
             df_display[col] = pd.to_numeric(df_display[col].astype(str).str.replace(',', ''), errors='coerce')
     
-    # 2) AgGrid 옵션 빌드
+    # 3) AgGrid 옵션 설정 (화면 포맷만, 내부 값은 숫자 유지)
     items_per_page = st.session_state.get('items_per_page_option', 50)
     ROW_PX = 30
     table_height = ROW_PX * int(items_per_page) + 60
     
     gb = GridOptionsBuilder.from_dataframe(df_display)
     gb.configure_pagination(paginationAutoPageSize=False, paginationPageSize=int(items_per_page))
-    # 금액 컬럼은 화면 포맷(천단위 콤마)만 하고 값은 숫자로 유지, 우측 정렬
+    
+    # 금액 컬럼: 화면 포맷(콤마) + 우측 정렬 (값은 숫자 유지)
     for col in DOWNLOAD_AMOUNT_ORIGINAL_COLS:
         if col in df_display.columns:
             gb.configure_column(
@@ -431,7 +441,10 @@ if not st.session_state.data_df.empty:
                 valueFormatter="(params) => (params.value !== null && params.value !== undefined) ? params.value.toLocaleString() : ''",
                 cellStyle={'textAlign': 'right'}
             )
-    # 기타 컬럼은 기본설정
+    
+    # 순번 컬럼도 우측이나 왼쪽 정렬 원하면 설정 (예: 왼쪽은 디폴트)
+    gb.configure_column('순번', cellStyle={'textAlign': 'right'})  # 순번도 오른쪽 정렬 원하면
+    
     grid_options = gb.build()
     
     AgGrid(
@@ -476,6 +489,7 @@ if not st.session_state.data_df.empty:
 
 else:
     st.info("용역명과 조회 기간을 설정한 뒤 '검색 시작'을 눌러주세요.")
+
 
 
 
