@@ -447,6 +447,17 @@ if not st.session_state.data_df.empty:
         gb.configure_column('순번', cellStyle={'textAlign': 'right'})
     
     grid_options = gb.build()
+    # 화면용 df가 어떤 상태인지 확인
+    if DEBUG:
+        # 후보 변수들 중 실제 사용되는 변수명으로 바꿔서 쓰세요 (예: df_display 또는 df_formatted_display)
+        st.sidebar.write("DEBUG: 'df_display' in locals/globals?", 'df_display' in globals() or 'df_display' in locals())
+        try:
+            st.sidebar.write("DEBUG: df_display.shape:", df_display.shape)
+            st.sidebar.write("DEBUG: df_display.dtypes:", df_display.dtypes.to_dict())
+            st.sidebar.write("DEBUG: df_display.head:", df_display.head(5).to_dict())
+        except Exception as e:
+            st.sidebar.write("DEBUG: df_display inspect error:", repr(e))
+    
     AgGrid(df_display, gridOptions=grid_options, fit_columns_on_grid_load=True, height=int(table_height))
 
     # 페이지네이션 UI (가운데 정렬)
@@ -484,6 +495,7 @@ if not st.session_state.data_df.empty:
 
 else:
     st.info("용역명과 조회 기간을 설정한 뒤 '검색 시작'을 눌러주세요.")
+
 
 
 
