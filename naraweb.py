@@ -406,8 +406,8 @@ if not st.session_state.data_df.empty:
     
     # cols_to_display = ['순번'] + [c for c in display_columns_map.keys() if c in df_page.columns and c != '순번']
     
-    # df_display = df_page[cols_to_display].copy()
-    # df_display.rename(columns={**display_columns_map, '순번': '순번'}, inplace=True)
+    df_display = df_page[cols_to_display].copy()
+    df_display.rename(columns={**display_columns_map, '순번': '순번'}, inplace=True)
     
     # 1) 준비: 페이지슬라이스 df_display가 존재해야 함 (이미 만들어져 있어야 함)
     #    만약 다른 변수명을 쓰면 그 변수명으로 바꿔서 사용하세요.
@@ -489,6 +489,7 @@ if not st.session_state.data_df.empty:
 
 else:
     st.info("용역명과 조회 기간을 설정한 뒤 '검색 시작'을 눌러주세요.")
+
 
 
 
