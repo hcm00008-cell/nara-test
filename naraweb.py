@@ -411,6 +411,15 @@ if not st.session_state.data_df.empty:
         if col in df_display.columns:
             df_display[col] = df_display[col].apply(lambda x: f"{int(float(str(x).replace(',', ''))):,}" if pd.notnull(x) and str(x).replace('.', '').replace(',', '').isdigit() else (str(x) if str(x).strip() == '0' else ''))
 
+    import pandas as pd
+    st.sidebar.write("DEBUG: type(df_formatted_display) =", type(df_formatted_display))
+    try:
+        st.sidebar.write("DEBUG: df.shape =", df_formatted_display.shape)
+    except Exception as e:
+        st.sidebar.write("DEBUG: df.shape error:", e)
+    st.sidebar.write("DEBUG: table_height type =", type(table_height), "value =", repr(table_height))
+    st.sidebar.write("DEBUG: streamlit version:", __import__('streamlit').__version__)
+    
     # --- 테이블 높이(반응형) 계산 예제 ---
     ROW_PX = 30  # 한 행당 픽셀 높이(필요시 28~32로 조정)
     items_to_show = st.session_state.items_per_page_option  # 기본 50으로 설정되어 있을 것
@@ -467,6 +476,7 @@ if not st.session_state.data_df.empty:
 
 else:
     st.info("용역명과 조회 기간을 설정한 뒤 '검색 시작'을 눌러주세요.")
+
 
 
 
