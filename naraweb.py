@@ -411,8 +411,6 @@ if not st.session_state.data_df.empty:
     # 인덱스 초기화 (기본 숫자 인덱스 안 보이도록)
     df_display = df_display.reset_index(drop=True)
     
-    # st.dataframe 출력 (50행 높이 적용 등 기존 옵션 유지)
-    st.dataframe(df_display, use_container_width=True, height=table_height)
 
     # 화면용 금액 포맷(콤마)
     for col in ['총계약금액', '금차계약금액']:
@@ -470,6 +468,7 @@ if not st.session_state.data_df.empty:
 
 else:
     st.info("용역명과 조회 기간을 설정한 뒤 '검색 시작'을 눌러주세요.")
+
 
 
 
