@@ -416,24 +416,25 @@ if not st.session_state.data_df.empty:
         if col in df_display.columns:
             df_display[col] = df_display[col].apply(lambda x: f"{int(float(str(x).replace(',', ''))):,}" if pd.notnull(x) and str(x).replace('.', '').replace(',', '').isdigit() else (str(x) if str(x).strip() == '0' else ''))
 
-
-
-    # 테이블 높이 계산(예: 50행 기본)
-    ROW_PX = 30
-    items_to_show = st.session_state.get('items_per_page_option', 50)
-    try:
-        table_height = min(int(ROW_PX * int(items_to_show)), 1500)
-    except:
-        table_height = 900
-
-    # 인덱스 초기화 (기본 숫자 인덱스 안 보이도록)
-    df_display = df_display.reset_index(drop=True)
+    # 1. 기본 인덱스 초기화 함수
+    def prepare_df_for_display(df, items_per_page=50):
+        if df.empty:
+            return df
+        # 순번 컬럼이 있으면 그대로, 없으면 생성
+        if '순번' not in df.columns:
+            df.insert(0, '순번', range(1, len(df)+1))
+        # 기본 인덱스 제거
+        df = df.reset_index(drop=True)
+        return df
     
-    # 안전 출력 (Streamlit 버그 우회 포함)
-    try:
-        st.dataframe(df_display, use_container_width=True, height=table_height)
-    except TypeError:
-        st.dataframe(df_display, use_container_width=True)
+    # 2. df 준비
+    items_per_page = st.session_state.get('items_per_page_option', 50)
+    df_for_display = prepare_df_for_display(df_display.copy(), items_per_page)
+    
+    # 3. st.dataframe 호출 (높이 50행 기준)
+    row_height = 30
+    height = row_height * items_per_page
+    st.dataframe(df_for_display, use_container_width=True, height=height)
 
     # 페이지네이션 UI (가운데 정렬)
     st.markdown("<br>", unsafe_allow_html=True)
@@ -470,6 +471,7 @@ if not st.session_state.data_df.empty:
 
 else:
     st.info("용역명과 조회 기간을 설정한 뒤 '검색 시작'을 눌러주세요.")
+
 
 
 
