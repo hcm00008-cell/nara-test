@@ -420,7 +420,7 @@ if not st.session_state.data_df.empty:
                 errors='coerce'   # 변환 불가하면 NaN
             )
     st.sidebar.write({c: str(df_display[c].dtype) for c in DOWNLOAD_AMOUNT_ORIGINAL_COLS if c in df_display.columns})
-    st.sidebar.write(df_display[DOWNLOAD_AMOUNT_ORIGINAL_COLS].head().to_dict())
+    # st.sidebar.write(df_display[DOWNLOAD_AMOUNT_ORIGINAL_COLS].head().to_dict())
     
     # AgGrid 옵션 설정
     items_per_page = st.session_state.get('items_per_page_option', 50)
@@ -491,6 +491,7 @@ if not st.session_state.data_df.empty:
 
 else:
     st.info("용역명과 조회 기간을 설정한 뒤 '검색 시작'을 눌러주세요.")
+
 
 
 
